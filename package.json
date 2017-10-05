@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "Tools and utilities to help build task runner style deployment pipelines with AWS CloudFormation",
   "author": "David Boland",
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dbslicer/cf-utils.git"
+  },
   "scripts": {},
   "dependencies": {
     "archiver": "^2.0.3",
