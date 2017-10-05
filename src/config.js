@@ -50,7 +50,7 @@ let baseConfig = {
     AWS_PROFILE:         { description: 'AWS Profile',         argName: 'profile' },
     AWS_REGION:          { description: 'AWS Region',          argName: 'region'  },
     ENVIRONMENT_STAGE:   { description: 'Environment stage',   argName: 'env'     },
-    ORGANIZATION:        { description: 'Environment stage',   argName: 'org'     }
+    ORGANIZATION:        { description: 'Organization Tag',    argName: 'org'     }
   },
 
   /**
