@@ -1,0 +1,15 @@
+{
+  "name": "cf-utils",
+  "version": "1.0.0",
+  "description": "Tools and utilities to help build task runner style deployment pipelines with AWS CloudFormation",
+  "author": "David Boland",
+  "scripts": {},
+  "dependencies": {
+    "archiver": "^2.0.3",
+    "aws-sdk": "^2.63.0",
+    "bunyan": "^1.8.3",
+    "bunyan-prettystream": "^0.1.3",
+    "generate-password": "^1.3.0",
+    "inquirer": "^3.2.1"
+  }
+}
