@@ -16,7 +16,7 @@ let { spawn } = require('child_process');
 function upsertStack(name, script, parameters, review) {
   return new Promise((resolve, reject) => {
     if (!fs.existsSync(script)) {
-      reject(new Error(`${filePath} does not exist!`));
+      reject(new Error(`${script} does not exist!`));
     }
 
     let params = {
@@ -147,17 +147,18 @@ function updateStack(params) {
  */
 function createChangeSet(params) {
   return new Promise((resolve, reject) => {
-    params.ChangeSetName = params.StackName + '-preview';
     let cf = new config.AWS.CloudFormation();
-    cf.createChangeSet(params, (err) => {
+    let csParams = Object.assign({}, 
+      params, { ChangeSetName: params.StackName + '-preview' });
+    cf.createChangeSet(csParams, (err) => {
       if (err) {
         reject(err);
       } else {
-        resolve(pollChangeSet(params));
+        resolve(pollChangeSet(csParams));
       }
     })
   });
-}
+} 
 
 /**
  * Deploy stack with transforms using CLI.

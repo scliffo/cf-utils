@@ -194,11 +194,13 @@ function emptyBucket(bucketName) {
 /**
  * Upload a directory (including all subdirectories) to an S3 bucket.
  * @param bucketName the name of the bucket
- * @param prefix folder/prefix to upload content to
+ * @param prefix [optional] folder/prefix to upload content to
  * @param source fully qualified path of the source directory
  * @returns {Promise}
  */
 function uploadDirectory(bucketName, prefix, source) {
+  if (!source) { source = prefix; prefix = null; }
+  
   return new Promise((resolve, reject) => {
     let s3 = new config.AWS.S3();
 
