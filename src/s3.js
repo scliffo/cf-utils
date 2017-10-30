@@ -204,7 +204,7 @@ function uploadDirectory(bucketName, prefix, source) {
   return new Promise((resolve, reject) => {
     let s3 = new config.AWS.S3();
 
-    fs.readdir(params.SourceDir, (err, files) => {
+    fs.readdir(source, (err, files) => {
       if (err) {
         reject(err);
       } else {
@@ -212,11 +212,12 @@ function uploadDirectory(bucketName, prefix, source) {
           reject(new Error(`Folder \'${source}\' is empty or does not exist. Did you forget to build your application?`))
         } else {
           let uploadFile = function (name, content) {
+            let key = (prefix ? prefix + '/' : '') + name;
             return new Promise((resolve, reject) => {
               const fileExt = path.extname(name);
               s3.putObject({
                 Bucket: bucketName,
-                Key: prefix + name,
+                Key: key,
                 Body: content,
                 ContentType:
                   fileExt === '.html' ? 'text/html' :
@@ -226,7 +227,7 @@ function uploadDirectory(bucketName, prefix, source) {
                 if (err) {
                   reject(err);
                 } else {
-                  config.logger.info('Successfully uploaded to s3://', bucketName + prefix + name);
+                  config.logger.info('Successfully uploaded to s3://', bucketName + '/' + key);
                   resolve();
                 }
               });
@@ -235,7 +236,7 @@ function uploadDirectory(bucketName, prefix, source) {
 
           let operations = [];
           for (const fileName of files) {
-            const filePath = path.join(params.SourceDir, fileName);
+            const filePath = path.join(source, fileName);
             if (fs.lstatSync(filePath).isDirectory()) {
               operations.push(uploadDirectory(bucketName, (prefix ? prefix + '/' : '') + fileName, filePath))
             } else {
