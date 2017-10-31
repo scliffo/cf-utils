@@ -3,6 +3,7 @@ let config = require('./config');
 let fs = require('fs');
 let path = require('path');
 let archiver = require('archiver');
+let mime = require('mime-types');
 
 
 /**
@@ -219,10 +220,7 @@ function uploadDirectory(bucketName, prefix, source) {
                 Bucket: bucketName,
                 Key: key,
                 Body: content,
-                ContentType:
-                  fileExt === '.html' ? 'text/html' :
-                    fileExt === '.css' ? 'text/css' :
-                      fileExt === '.js' ? 'text/javascript' : null
+                ContentType: mime.lookup(name) || 'application/octet-stream'
               }, (err) => {
                 if (err) {
                   reject(err);
