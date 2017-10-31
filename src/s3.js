@@ -212,14 +212,13 @@ function uploadDirectory(bucketName, prefix, source) {
         if (!files || files.length === 0) {
           reject(new Error(`Folder \'${source}\' is empty or does not exist. Did you forget to build your application?`))
         } else {
-          let uploadFile = function (name, content) {
+          let uploadFile = function (name, filePath) {
             let key = (prefix ? prefix + '/' : '') + name;
             return new Promise((resolve, reject) => {
-              const fileExt = path.extname(name);
               s3.putObject({
                 Bucket: bucketName,
                 Key: key,
-                Body: content,
+                Body: fs.createReadStream(filePath),
                 ContentType: mime.lookup(name) || 'application/octet-stream'
               }, (err) => {
                 if (err) {
@@ -236,9 +235,9 @@ function uploadDirectory(bucketName, prefix, source) {
           for (const fileName of files) {
             const filePath = path.join(source, fileName);
             if (fs.lstatSync(filePath).isDirectory()) {
-              operations.push(uploadDirectory(bucketName, (prefix ? prefix + '/' : '') + fileName, filePath))
+              operations.push(uploadDirectory(bucketName, (prefix ? prefix + '/' : '') + fileName, filePath));
             } else {
-              operations.push(uploadFile(fileName, fs.readFileSync(filePath).toString()))
+              operations.push(uploadFile(fileName, filePath));
             }
           }
 
