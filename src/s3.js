@@ -263,7 +263,7 @@ function uploadDirectoryAsZipFile(bucketName, key, source, dest, name) {
   return new Promise((resolve, reject) => {
 
     // Create dest directory if it does not exist
-    dest.split(path.sep).reduce((parent, child) => {
+    dest.split(dest.includes(path.sep) ? path.sep : '/').reduce((parent, child) => {
       const curr = path.resolve(parent, child);
       if (!fs.existsSync(curr)) {
         fs.mkdirSync(curr);
@@ -280,14 +280,20 @@ function uploadDirectoryAsZipFile(bucketName, key, source, dest, name) {
     output.on('close', function () {
       config.logger.info('Zip archive written to ' + name + ' as ' + archive.pointer() + ' total bytes compressed');
 
+      config.logger.info('Uploading ...');
       let s3 = new config.AWS.S3({params: {Bucket: bucketName, Key: key}});
-      s3.upload({Body: fs.createReadStream(fullPath)}, function(err) {
+      let stream = fs.createReadStream(fullPath);
+      s3.putObject({Body: stream}, function(err) {
         if (err) {
           reject(err);
         } else {
+          process.stdout.write('\n');
           config.logger.info('Successfully uploaded to s3://', bucketName + '/' + key);
           resolve(fullPath);
         }
+      })
+      .on('httpUploadProgress', (progress, response) => {
+        process.stdout.write('.');
       });
     });
 

@@ -14,6 +14,21 @@ seriously clutter your infrastructure if you deploy dozens of stacks.
 Otherwise these utilities encapsulate calling the AWS SDK directly from your task so that your cloud formation gets passed
 all the parameters it needs or your infrastructure can be created directly yet still maintained as code.   
 
+## Latest Update
+
+Added ability to use S3 for CloudFormation templates. If directed, `upsertStack` will upload your template to S3 and use TemplateURL when making calls to createStack and createChangeSet. S3 settings are controlled via the new options parameter `function upsertStack(name, script, parameters, OPTIONS)`: 
+
+
+```json
+{
+  review   : boolean // If stack exists and this is true, then generate change set and pause update pending reviewer direction.
+  s3Bucket : string  // If this is set then the specified script will be uploaded to S3 and the TemplateURL will be used instead of TemplateBody.
+  s3Prefix : string  // [optional] Used when naming template in S3 bucket if s3Bucket is specified.
+ }
+```
+
+You can also take care of uploading the template yourself and pass in an S3 url ('https://s3.amazonaws.com....') instead of a local path for the `script` parameter.
+
 ## Requirements
 
 The code is written in javascript ECMAScript 6 
