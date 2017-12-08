@@ -57,7 +57,6 @@ function upsertStack(name, script, parameters, options) {
 
     if (script.substring(0, 10) === 'https://s3') {
       params.TemplateURL  = script;
-      console.log(script);
     } else {
       if (!fs.existsSync(script)) {
         reject(new Error(`${script} does not exist!`));
