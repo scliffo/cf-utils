@@ -463,7 +463,8 @@ function pollChangeSet(params) {
             resolve(cs);
             return;
           case 'FAILED':
-            if (cs.StatusReason.indexOf("No updates are to be performed") >= 0) {
+            if (cs.StatusReason.indexOf("No updates are to be performed") >= 0 ||
+                cs.StatusReason.indexOf("didn't contain changes") >= 0) {
               config.logger.info('No updates are to be performed');
               resolve();
             } else {
