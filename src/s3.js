@@ -53,17 +53,19 @@ function listObjects(bucketName, continuationToken) {
  * List versions for the given object (up to 1000 versions)
  * @param bucketName name of the bucket
  * @param key object key
- * @param continuationToken continute listing from this marker
+ * @param keyMarker continute listing from this marker
+ * @param versionIdMarker continute listing from this marker
  * @returns {Promise}
  */
-function listObjectVersions(bucketName, key, continuationToken) {
+function listObjectVersions(bucketName, key, keyMarker, versionIdMarker) {
   return new Promise((resolve, reject) => {
     let s3 = new config.AWS.S3();
     let params = {
       Bucket: bucketName,
       Prefix: key,
       MaxKeys: 1,
-      VersionIdMarker: continuationToken
+      KeyMarker: keyMarker,
+      VersionIdMarker: versionIdMarker
     };
     s3.listObjectVersions(params, (err, data) => {
       if (err) {
@@ -108,12 +110,17 @@ function deleteVersionedObjects(bucketName, objectKeys) {
   return new Promise((resolve, reject) => {
     let listAndDelete = function(key, continuationToken) {
       return new Promise((resolve, reject) => {
-        listObjectVersions(bucketName, key, continuationToken)
+        listObjectVersions(bucketName, key.Key || key,
+          continuationToken && continuationToken.NextKeyMarker,
+          continuationToken && continuationToken.NextVersionIdMarker)
           .then(data => {
             if (data && data.Versions && data.Versions.length > 0) {
               let keys = data.Versions.map((version) => ({Key: version.Key, VersionId: version.VersionId}));
               deleteObjects(bucketName, keys)
-                .then(() => resolve(data.NextVersionIdMarker ));
+                .then(() => resolve({
+                  NextKeyMarker: data.NextKeyMarker,
+                  NextVersionIdMarker: data.NextVersionIdMarker
+                }));
             } else {
               resolve();
             }
