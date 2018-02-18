@@ -38,19 +38,21 @@ let baseConfig = {
       argName:     '--foo',         // Command line arg name
       description: 'Foo Parameter', // Description
       default:     'foo value'      // Default value
+      alias:       'foo'            // Alias (this parameter can be mapped to another name)
+                                    // Useful to support different naming styles
     },
    *
    */
   schema : {
-    PROJECT:             { description: 'ACS Project Name'                        },
-    PROJECT_VERSION:     { description: 'ACS Project Version (e.g. poc, mvp1)'    },
-    PROJECT_PREFIX:      { description: 'ACS Project Prefix'                      },
-    API_PACKAGE_PREFIX:  { description: 'API Package Prefix',  default: 'api-'    },
-    API_PACKAGE_VERSION: { description: 'API Package Version', default: '0.0.1'   },
-    AWS_PROFILE:         { description: 'AWS Profile',         argName: 'profile' },
-    AWS_REGION:          { description: 'AWS Region',          argName: 'region'  },
-    ENVIRONMENT_STAGE:   { description: 'Environment stage',   argName: 'env'     },
-    ORGANIZATION:        { description: 'Organization Tag',    argName: 'org'     }
+    PROJECT:             { description: 'ACS Project Name',                        alias: 'project'           },
+    PROJECT_VERSION:     { description: 'ACS Project Version (e.g. poc, mvp1)',    alias: 'projectVersion'    },
+    PROJECT_PREFIX:      { description: 'ACS Project Prefix',                      alias: 'projectPrefix'     },
+    API_PACKAGE_PREFIX:  { description: 'API Package Prefix',  default: 'api-',    alias: 'apiPackagePrefix'  },
+    API_PACKAGE_VERSION: { description: 'API Package Version', default: '0.0.1',   alias: 'apiPackageVersion' },
+    AWS_PROFILE:         { description: 'AWS Profile',         argName: 'profile', alias: 'awsProfile'        },
+    AWS_REGION:          { description: 'AWS Region',          argName: 'region',  alias: 'awsRegion'         },
+    ENVIRONMENT_STAGE:   { description: 'Environment stage',   argName: 'env',     alias: 'environmentStage'  },
+    ORGANIZATION:        { description: 'Organization Tag',    argName: 'org',     alias: 'organization'      }
   },
 
   /**
@@ -192,14 +194,17 @@ let baseConfig = {
  */
 let config = new Proxy(baseConfig, {
   /**
-   * Get the specified config parameter (value will be sourced from command line or schema default if available)
+   * Get the specified config parameter (value will be sourced from command line, alias or schema default if available)
    */
   get: (target, parameter) => {
-    if (!target.hasOwnProperty(parameter)) {
+    if (!target.hasOwnProperty(parameter) && parameter !== 'inspect' && typeof(parameter) === 'string') {
       let value = undefined;
-      let schema = target.schema[parameter] || {};
+      let schema = target.schema[parameter] ||
+        Object.keys(target.schema).find(p => p.alias === parameter) || {};
       if (schema.argName && argv[schema.argName]) {
         value = argv[schema.argName];
+      } else if (schema.alias) {
+        value = target[schema.alias]
       }
       if (!value && schema.default) {
         value = schema.default;
@@ -213,6 +218,21 @@ let config = new Proxy(baseConfig, {
       return target.parameter = value;
     }
     return target[parameter];
+  },
+
+  /**
+   * Check if the specified config parameter has been defined (either directly, via command line, alias or default)
+   */
+  has: (target, parameter) => {
+    if (!target.hasOwnProperty(parameter)) {
+      let schema = target.schema[parameter] ||
+        Object.keys(target.schema).find(p => p.alias === parameter) || {};
+      return (
+        (schema.argName && argv[schema.argName]) ||
+        (schema.alias && alias in target) ||
+        (schema.default));
+    }
+    return true;
   }
 
 });
