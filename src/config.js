@@ -200,7 +200,7 @@ let config = new Proxy(baseConfig, {
     if (!target.hasOwnProperty(parameter) && parameter !== 'inspect' && typeof(parameter) === 'string') {
       let value = undefined;
       let schema = target.schema[parameter] ||
-        Object.keys(target.schema).find(p => p.alias === parameter) || {};
+        target.schema[Object.keys(target.schema).find(p => target.schema[p].alias === parameter)] || {};
       if (schema.argName && argv[schema.argName]) {
         value = argv[schema.argName];
       } else if (schema.alias) {
