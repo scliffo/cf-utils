@@ -226,7 +226,7 @@ let config = new Proxy(baseConfig, {
   has: (target, parameter) => {
     if (!target.hasOwnProperty(parameter)) {
       let schema = target.schema[parameter] ||
-        Object.keys(target.schema).find(p => p.alias === parameter) || {};
+        target.schema[Object.keys(target.schema).find(p => target.schema[p].alias === parameter)] || {};
       return (
         (schema.argName && argv[schema.argName]) ||
         (schema.alias && alias in target) ||
