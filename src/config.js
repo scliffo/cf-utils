@@ -229,7 +229,7 @@ let config = new Proxy(baseConfig, {
         target.schema[Object.keys(target.schema).find(p => target.schema[p].alias === parameter)] || {};
       return (
         (schema.argName && argv[schema.argName]) ||
-        (schema.alias && alias in target) ||
+        (schema.alias && schema.alias in target) ||
         (schema.default));
     }
     return true;
