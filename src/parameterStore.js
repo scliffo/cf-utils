@@ -80,7 +80,7 @@ function deleteParameter(name) {
       Name: name
     };
     let ssm = new config.AWS.SSM();
-    ssm.deleteParameter(params, (data) => {
+    ssm.deleteParameter(params, (err) => {
       if (err) {
         reject(err);
       } else {

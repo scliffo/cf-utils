@@ -68,18 +68,18 @@ function deleteLogGroups(filter) {
                 .then(() => resolve(data.nextToken))
                 .catch(err => reject(err));
             } else {
-              resolve();
+              resolve(data ? data.nextToken : null);
             }
           }).catch(err => reject(err));
-      });
-    };
-
-    listAndDelete()
+      })
       .then(continuationToken => {
         if (continuationToken) {
           return (listAndDelete(continuationToken))
         }
-      })
+      });
+    };
+
+    listAndDelete()
       .then(() => resolve())
       .catch(err => reject(err));
   });

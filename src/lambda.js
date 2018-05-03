@@ -69,19 +69,19 @@ function updateFunctionsCode(filter, params) {
                 .then(() => resolve(data.NextMarker))
                 .catch(err => reject(err));
             } else {
-              resolve();
+              resolve(data ? data.NextMarker : null);
             }
           })
           .catch(err => reject(err));
       })
-    };
-
-    listAndUpdate()
       .then(continuationToken => {
         if (continuationToken) {
           return (listAndUpdate(continuationToken))
         }
       })
+    };
+
+    listAndUpdate()
       .then(() => resolve())
       .catch(err => reject(err));
   });
