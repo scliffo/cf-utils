@@ -1,6 +1,6 @@
 {
   "name": "cf-utils",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Tools and utilities to help build task runner style deployment pipelines with AWS CloudFormation",
   "author": "David Boland",
   "license": "Unlicense",
