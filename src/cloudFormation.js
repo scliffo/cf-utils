@@ -50,7 +50,8 @@ function upsertStack(name, script, parameters, options) {
       StackName: name,
       Capabilities: [
         'CAPABILITY_IAM',
-        'CAPABILITY_NAMED_IAM'
+        'CAPABILITY_NAMED_IAM',
+        'CAPABILITY_AUTO_EXPAND'
       ],
       Parameters: parameters
     };
@@ -352,7 +353,7 @@ function deleteStack(name) {
         // Check for any S3 buckets and if found empty each bucket otherwise delete stack operation will fail
         let s3Operations = [];
         for (let i = 0; i < data.Stacks[0].Outputs.length; i++) {
-          if (/.*Bucket$/.test(data.Stacks[0].Outputs[i].OutputKey)) {
+          if (/.*Bucket/.test(data.Stacks[0].Outputs[i].OutputKey)) {
             s3Operations.push(new Promise((resolve) => {
               config.logger.info('Emptying S3 bucket', data.Stacks[0].Outputs[i].OutputValue);
               resolve(s3.emptyBucket(data.Stacks[0].Outputs[i].OutputValue));
