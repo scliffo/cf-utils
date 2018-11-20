@@ -45,6 +45,9 @@ function upsertStack(name, script, parameters, options) {
       );
   }
 
+  let containsTransforms =
+    /Transform\"?\s*:\s*\"?AWS::Serverless/.test(fs.readFileSync(script, 'utf-8'));
+
   return new Promise((resolve, reject) => {
     let params = {
       StackName: name,
@@ -89,22 +92,23 @@ function upsertStack(name, script, parameters, options) {
     let cf = new config.AWS.CloudFormation();
     cf.describeStacks({StackName: name}, (err) => {
       if (err) {
-        createStack(params)
-          .then(result => {
-            resolve(result);
-          })
-          .catch((err) => {
-            if (err.toString().indexOf('CreateStack cannot be used with templates containing Transforms')>=0) {
-              config.logger.info('Stack contains transforms, deploying via change set...');
-              delete params.DisableRollback;
-              resolve(applyChangeSet(Object.assign({}, params, {
-                  ChangeSetName: generateChangeSetName(),
-                  ChangeSetType: 'CREATE'
-                }))
-              );
-            }
-            reject(err);
-          });
+        if (containsTransforms) {
+          config.logger.info('Stack contains transforms, deploying via change set...');
+          delete params.DisableRollback;
+          resolve(applyChangeSet(Object.assign({}, params, {
+              ChangeSetName: generateChangeSetName(),
+              ChangeSetType: 'CREATE'
+            }))
+          );
+        } else {
+          createStack(params)
+            .then(result => {
+              resolve(result);
+            })
+            .catch((err) => {
+              reject(err);
+            });
+        }
       } else {
         if (options.review) {
           config.logger.info('Stack exists, creating changeset for review...');
@@ -198,7 +202,6 @@ function updateStack(params) {
 function generateChangeSetName() {
   return 'cf-utils-cloudformation-upsert-stack-' + (Date.now() / 1000 | 0);
 }
-
 
 /**
  * Update a stack by creating and executing a change set (used with templates with transforms)
