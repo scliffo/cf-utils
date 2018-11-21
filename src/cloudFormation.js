@@ -30,6 +30,9 @@ function upsertStack(name, script, parameters, options) {
     options = options || { };
   }
 
+  let containsTransforms = options.hasOwnProperty('containsTransforms') ?
+    options.containsTransforms : /Transform\"?\s*:\s*\"?AWS::Serverless/.test(fs.readFileSync(script, 'utf-8'));
+
   if (options.s3Bucket) {
     return s3.putS3Object({
         Bucket: options.s3Bucket,
@@ -40,13 +43,10 @@ function upsertStack(name, script, parameters, options) {
           name,
           `https://s3.amazonaws.com/${options.s3Bucket}/${options.s3Prefix}${script}`,
           parameters,
-          { review: options.review === true }
+          { review: options.review === true, containsTransforms: containsTransforms }
         )
       );
   }
-
-  let containsTransforms =
-    /Transform\"?\s*:\s*\"?AWS::Serverless/.test(fs.readFileSync(script, 'utf-8'));
 
   return new Promise((resolve, reject) => {
     let params = {
@@ -69,23 +69,23 @@ function upsertStack(name, script, parameters, options) {
       params.TemplateBody = fs.readFileSync(script).toString();
     }
 
+
     let executeUpdate = function () {
-      return new Promise((resolve, reject) =>
-        updateStack(params)
+      return new Promise((resolve, reject) => {
+        if (containsTransforms) {
+          config.logger.info('Stack contains transforms, deploying via change set...');
+          delete params.DisableRollback;
+          resolve(applyChangeSet(Object.assign({}, params, {
+              ChangeSetName: generateChangeSetName(),
+              ChangeSetType: 'UPDATE'
+            }))
+          );
+        } else {
+          return updateStack(params)
           .then(data => resolve(data))
-          .catch(err => {
-            if (err.toString().indexOf('UpdateStack cannot be used with templates containing Transforms') >= 0) {
-              config.logger.info('Stack contains transforms, deploying via change set...');
-              resolve(applyChangeSet(Object.assign({}, params, {
-                  ChangeSetName: generateChangeSetName(),
-                  ChangeSetType: 'UPDATE'
-                }))
-              );
-            } else {
-              reject(err);
-            }
-          })
-      );
+          .catch(err => reject(err))
+        }
+      });
     };
 
 
