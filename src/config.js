@@ -52,7 +52,8 @@ let baseConfig = {
     AWS_PROFILE:         { description: 'AWS Profile',         argName: 'profile', alias: 'awsProfile'        },
     AWS_REGION:          { description: 'AWS Region',          argName: 'region',  alias: 'awsRegion'         },
     ENVIRONMENT_STAGE:   { description: 'Environment stage',   argName: 'env',     alias: 'environmentStage'  },
-    ORGANIZATION:        { description: 'Organization Tag',    argName: 'org',     alias: 'organization'      }
+    ORGANIZATION:        { description: 'Organization Tag',    argName: 'org',     alias: 'organization'      },
+    TENANT:              { description: 'Tenant',              argName: 'tenant',  alias: 'tenant'            }
   },
 
   /**
@@ -138,6 +139,23 @@ let baseConfig = {
   },
 
   /**
+   * Get the name of an tenant resource with the given suffix
+   * @param suffix
+   * @return {*}
+   */
+  getTenantResourceName : (suffix) => {
+    return config.getTenantResourcePrefix() + suffix;
+  },
+
+  /**
+   * Get the prefix for all tenant resources
+   * @return {string}
+   */
+  getTenantResourcePrefix : () => {
+    return config.PROJECT_PREFIX + config.TENANT + '-' + config.ENVIRONMENT_STAGE + '-';
+  },
+
+  /**
    * Get the name of a core parameter with the given name
    * @param name
    * @return {*}
@@ -169,6 +187,23 @@ let baseConfig = {
    */
   getOrgParameterPrefix : () => {
     return config.PROJECT_PREFIX + config.ORGANIZATION + '-' + config.ENVIRONMENT_STAGE + '-' + config.AWS_REGION + '-';
+  },
+
+  /**
+   * Get the name of a tenant parameter with the given name
+   * @param name
+   * @return {*}
+   */
+  getTenantParameterName : (name) => {
+    return config.getTenantParameterPrefix() + name;
+  },
+
+  /**
+   * Get the prefix for all tenant parameters
+   * @return {string}
+   */
+  getTenantParameterPrefix : () => {
+    return config.PROJECT_PREFIX + config.TENANT + '-' + config.ENVIRONMENT_STAGE + '-' + config.AWS_REGION + '-';
   },
 
   /**
