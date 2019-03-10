@@ -321,18 +321,26 @@ function describeStack(name) {
 }
 
 /**
- * Extract the outputs from a stack
+ * Extract the outputs for the specified stack
  * @param name fully qualified stack name
  * @return {Promise.<TResult>}
  */
 function describeOutput(name) {
   return describeStack(name)
-    .then(data => data.Outputs.reduce((map, output) => {
-      map[output.OutputKey] = output.OutputValue; return map;
-      }, {})
-    );
+    .then(data => extractOutput(data)
+  );
 }
 
+/**
+ * Extract the outputs from a stack
+ * @param stack stack details
+ * @return {Promise.<TResult>}
+ */
+function extractOutput(stack) {
+  return stack.Outputs.reduce((map, output) => {
+    map[output.OutputKey] = output.OutputValue; return map;
+  }, {});
+}
 
 /**
  * Delete a stack (note: will automatically empty S3 buckets before running deleteStack operation)
@@ -499,6 +507,7 @@ module.exports = {
   deployStack,
   describeStack,
   describeOutput,
+  extractOutput,
   deleteStack,
   pollStack,
   pollChangeSet,

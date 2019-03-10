@@ -25,6 +25,11 @@ module.exports = {
   cognito: require('./src/cognito'),
 
   /**
+   * Glue cloud formation utilities
+   */
+  glue: require('./src/glue'),
+
+  /**
    * IAM cloud formation utilities
    */
   iam: require('./src/iam'),
@@ -33,6 +38,11 @@ module.exports = {
    * EC2 key pair cloud formation utilities
    */
   keypair: require('./src/keypair'),
+
+  /**
+   * Kinesis cloud formation utilities
+   */
+  kinesis: require('./src/kinesis'),
 
   /**
    * Lambda cloud formation utilities
