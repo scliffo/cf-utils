@@ -9,7 +9,7 @@ let config = require('./config');
  * @param {String} label partition label
  * @param {Date} start start date
  * @param {Number} days number of days to create partitions
- * @param {String} format [optional] partition format (Hive or default firehose format)
+ * @param {String} format partition format (Hive or default firehose format)
  * @param {String} catalogId [optional] catalog id
  */
 function createPartitions(database, table, label, start, days, format, catalogId){
