@@ -9,9 +9,10 @@ let config = require('./config');
  * @param {String} label partition label
  * @param {Date} start start date
  * @param {Number} days number of days to create partitions
+ * @param {String} format partition format (Hive or default firehose format)
  * @param {String} catalogId [optional] catalog id
  */
-function createPartitions(database, table, label, start, days, catalogId){
+function createPartitions(database, table, label, start, days, format, catalogId){
   let add = (d, c) => { let n=new Date(d); n.setDate(n.getDate()+c);return n; }
   let pad = (n) => n.toString().padStart(2, '0');
   let cut = (a, l) => {var c=[],i=0,n=a.length; while(i<n){c.push(a.slice(i,i+=l));}return c;}
@@ -33,10 +34,14 @@ function createPartitions(database, table, label, start, days, catalogId){
       partitions.push({
         Values: [label, year, month, day, hour],
         StorageDescriptor: {
-          Location:     info.Table.StorageDescriptor.Location+label+'/'+year+'/'+month+'/'+day+'/'+hour,
+          Location:     (format === 'Hive') ?
+                          info.Table.StorageDescriptor.Location+'/tenant='+label+'/'+'year='+year+'/'+'month='+month+'/'+'day='+day+'/'+'hour='+hour+'/' :
+                          info.Table.StorageDescriptor.Location+label+'/'+year+'/'+month+'/'+day+'/'+hour,
           InputFormat:  info.Table.StorageDescriptor.InputFormat,
           OutputFormat: info.Table.StorageDescriptor.OutputFormat,
-          SerdeInfo:    info.Table.StorageDescriptor.SerdeInfo
+          SerdeInfo:    info.Table.StorageDescriptor.SerdeInfo,
+          Parameters:   info.Table.StorageDescriptor.Parameters,
+          Columns:      info.Table.StorageDescriptor.Columns
         }
       });
     }
