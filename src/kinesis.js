@@ -42,6 +42,25 @@ function createParquetConversion(deliveryStreamName, databaseName, tableName) {
 }
 
 /**
+ * Tag the specified firehose stream
+ * @param {String} firehose kinesis firehose stream
+ */
+function tagFirehoseStream (firehose, tags) {
+  const fh = new config.AWS.Firehose({apiVersion: '2015-08-14'});
+  let defaultTags = [
+    {
+      Key: 'acs:project',
+      Value: config.project
+    },
+    {
+      Key: 'acs:project-version',
+      Value: config.projectVersion
+    }
+  ];
+  return fh.tagDeliveryStream({DeliveryStreamName: firehose, Tags: tags ? tags : defaultTags}).promise();
+}
+
+/**
  * Launch the specifed kinesis application.
  * @param {String} application kinesis application
  */
@@ -64,5 +83,6 @@ function startApplication (application) {
 
 module.exports = {
   createParquetConversion,
+  tagFirehoseStream,
   startApplication
 };
