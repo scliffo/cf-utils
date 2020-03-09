@@ -73,7 +73,12 @@ let baseConfig = {
     process.env.AWS_REGION = config.AWS_REGION;
 
     delete this.AWS;
-    return this.AWS = require('aws-sdk');
+    this.AWS = require('aws-sdk');
+
+    this.AWS.config.maxRetries = 5;
+    this.AWS.retryDelayOptions = {base: Math.random() * (2000 - 800) + 800};
+
+    return this.AWS;
   },
 
   /**

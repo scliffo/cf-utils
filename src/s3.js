@@ -117,10 +117,11 @@ function deleteVersionedObjects(bucketName, objectKeys) {
             if (data && data.Versions && data.Versions.length > 0) {
               let keys = data.Versions.map((version) => ({Key: version.Key, VersionId: version.VersionId}));
               deleteObjects(bucketName, keys)
-                .then(() => resolve({
-                  NextKeyMarker: data.NextKeyMarker,
-                  NextVersionIdMarker: data.NextVersionIdMarker
-                }));
+                .then(() => data.NextKeyMarker ?
+                  listAndDelete(key, {
+                    NextKeyMarker: data.NextKeyMarker,
+                    NextVersionIdMarker: data.NextVersionIdMarker
+                  }) : resolve());
             } else {
               resolve();
             }
@@ -130,16 +131,11 @@ function deleteVersionedObjects(bucketName, objectKeys) {
 
     Promise.all(objectKeys.map((key) => new Promise((resolve, reject) => {
       listAndDelete(key)
-        .then(continuationToken => {
-          if (continuationToken) {
-            return(listAndDelete(key, continuationToken))
-          }
-        })
-        .then(() => resolve())
-        .catch(err => reject(err));
-      })))
       .then(() => resolve())
       .catch(err => reject(err));
+    })))
+    .then(() => resolve())
+    .catch(err => reject(err));
   });
 }
 
@@ -166,7 +162,8 @@ function emptyBucket(bucketName) {
               (versioningEnabled ?
                 deleteVersionedObjects(bucketName, keys) :
                 deleteObjects(bucketName, keys))
-                .then(() => resolve(data.NextContinuationToken));
+                .then(() =>  data.NextContinuationToken ?
+                  listAndDelete(data.NextContinuationToken) : resolve());
             } else {
               resolve();
             }
@@ -186,13 +183,8 @@ function emptyBucket(bucketName) {
         versioningEnabled = data.Status === 'Enabled';
 
         listAndDelete()
-          .then(continuationToken => {
-            if (continuationToken) {
-              return(listAndDelete(continuationToken))
-            }
-          })
-          .then(() => resolve())
-          .catch(err => reject(err));
+        .then(() => resolve())
+        .catch(err => reject(err));
       }
     });
   });
@@ -208,7 +200,7 @@ function emptyBucket(bucketName) {
  */
 function uploadDirectory(bucketName, prefix, source) {
   if (!source) { source = prefix; prefix = null; }
-  
+
   return new Promise((resolve, reject) => {
     let s3 = new config.AWS.S3();
 
