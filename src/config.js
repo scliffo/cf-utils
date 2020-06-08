@@ -75,8 +75,8 @@ let baseConfig = {
     delete this.AWS;
     this.AWS = require('aws-sdk');
 
-    this.AWS.config.maxRetries = 7;
-    this.AWS.retryDelayOptions = {base: Math.random() * (3000 - 900) + 900};
+    this.AWS.config.maxRetries = 12;
+    this.AWS.retryDelayOptions = {base: Math.random() * (4000 - 800) + 800};
 
     return this.AWS;
   },
